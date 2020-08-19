@@ -11,7 +11,7 @@ import glob
 import os
 import telegram
 import requests
-from reddit import request_reddit, get_gfycat_url
+from reddit import request_reddit
 
 bot_token = os.environ.get("BOT_TOKEN", "")
 
@@ -55,10 +55,8 @@ def get_command(update, context):
             sub_reddit)
     else:
         url = 'https://www.reddit.com/r/{0}/.json?'.format(sub_reddit)
-    gfycat = 'https://gfycat.com/cajax/get/{0}'
 
     request_reddit(url)
-    get_gfycat_url(gfycat)
 
     src_dir = "downloads"
     for jpgfile in glob.iglob(os.path.join(src_dir, "*.jpg")):
