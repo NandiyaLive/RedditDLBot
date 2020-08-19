@@ -19,18 +19,18 @@ bot_token = os.environ.get("BOT_TOKEN", "")
 def start(update, context):
     """Send a message when the command /start is issued."""
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text="<b>Hi There! 👋</b>\nI can download all posts (pictures + videos) in a profile, IGTV Videos & Stories from Instagram.\nPlease read /help before use.", parse_mode=telegram.ParseMode.HTML)
+                             text="<b>Hi There! 👋</b>\nI can download photos & videos using subreddit name.\nPlease read /help before use.", parse_mode=telegram.ParseMode.HTML)
 
 
 def help_command(update, context):
     """Send a message when the command /help is issued."""
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text="This bot can help you to download all posts (pictures + videos) in a profile, IGTV Videos & Stories from Instagram without leaving Telegram. Simply send a command with a Instagram username (handle) without '@'.\n\n<b>Available Commands :</b>\n/profile username - Download all posts from the username’s profile.\n/stories username - Download stories from the username’s profile.\n/igtv username - Download IGTV Videos from the username’s profile.\n\n<b>How to find the username?</b>\nOpen Instagram app & then go to the profile that you want to download. Username must be on the top.\nIn case you are using a browser you can find it in the Address bar.\n<b>Example : </b>Username for instagram.com/rashmika_mandanna & @rashmika_mandanna is 'rashmika_mandanna' 😉", parse_mode=telegram.ParseMode.HTML)
+                             text="This bot can help you to download photos & videos from subreddits using subreddit name without leaving Telegram. Simply send a <code>/get <subreddit name></code>.\n\n<b>How to find the subreddit name?</b>\nYou can find it in the browser's Address bar.\n<b>Example : </b>Subreddit name of https://www.reddit.com/r/gameofthrones is 'gameofthrones'.", parse_mode=telegram.ParseMode.HTML)
 
 
 def about_command(update, context):
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text='''Made with ❤️ + python-telegram-bot & Instaloader.\nSource Code : <a href="https://github.com/NandiyaLive/xIGDLBot">GitHub</a>\n\n<b>Readme File : https://bit.ly/xIGDLBot''', parse_mode=telegram.ParseMode.HTML)
+                             text='''Made with ❤️ + python-telegram-bot & reddit-media-downloader.\nSource Code : <a href="https://github.com/NandiyaLive/RedditDLBot">GitHub</a>''', parse_mode=telegram.ParseMode.HTML)
 
 
 def contact_command(update, context):
@@ -56,9 +56,12 @@ def get_command(update, context):
     else:
         url = 'https://www.reddit.com/r/{0}/.json?'.format(sub_reddit)
 
+    context.bot.send_message(chat_id=update.message.chat_id,
+                             text="Cooking your request 👨‍🍳\nThis may take longer, take a nap I can handle this without you.", parse_mode=telegram.ParseMode.HTML)
+
     request_reddit(url)
 
-    src_dir = "downloads"
+    src_dir = "/downloads/" + msg
     for jpgfile in glob.iglob(os.path.join(src_dir, "*.jpg")):
         context.bot.send_photo(
             chat_id=update.message.chat_id, photo=open(jpgfile, 'rb'))
@@ -95,3 +98,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
