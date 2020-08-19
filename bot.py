@@ -60,7 +60,7 @@ def get_command(update, context):
     request_reddit(url)
     get_gfycat_url(gfycat)
 
-    src_dir = "/downloads/" + msg
+    src_dir = "downloads"
     for jpgfile in glob.iglob(os.path.join(src_dir, "*.jpg")):
         context.bot.send_photo(
             chat_id=update.message.chat_id, photo=open(jpgfile, 'rb'))
