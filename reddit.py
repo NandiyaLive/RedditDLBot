@@ -11,17 +11,6 @@ headers = \
     {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'}
 
 
-def get_gfycat_url(gfycat_name):
-    response = r.get(gfycat.format(gfycat_name), headers=headers)
-
-    if response.status_code == 200:
-        response_json = response.json()
-        mp4url = response_json['gfyItem']['mp4Url']
-        return mp4url
-    else:
-        return False
-
-
 def reporthook(count, block_size, total_size):
     global start_time
     if count == 0:
