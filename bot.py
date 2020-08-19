@@ -57,12 +57,8 @@ def get_command(update, context):
         url = 'https://www.reddit.com/r/{0}/.json?'.format(sub_reddit)
     gfycat = 'https://gfycat.com/cajax/get/{0}'
 
-    headers = \
-        {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'}
-
     request_reddit(url)
     get_gfycat_url(gfycat)
-    get_gfycat_url(headers)
 
     src_dir = "/downloads/" + msg
     for jpgfile in glob.iglob(os.path.join(src_dir, "*.jpg")):
