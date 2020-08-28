@@ -1,7 +1,8 @@
 FROM python:3.8.5
 
 ADD bot.py /
-    reddit.py
+
+ADD reddit.py /
 
 COPY requirements.txt .
 
