@@ -6,9 +6,23 @@ import os
 import time
 import sys
 import argparse
+from bot import upload
 
 headers = \
     {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'}
+
+
+def get_gfycat_url(gfycat_name):
+    gfycat = 'https://gfycat.com/cajax/get/{0}'
+    
+    response = r.get(gfycat.format(gfycat_name), headers=headers)
+
+    if response.status_code == 200:
+        response_json = response.json()
+        mp4url = response_json['gfyItem']['mp4Url']
+        return mp4url
+    else:
+        return False
 
 
 def reporthook(count, block_size, total_size):
@@ -31,6 +45,8 @@ def download_media(
     file_name,
     source,
     folder_name,
+    chat_id,
+    sub_reddit
 ):
     try:
         file_path = folder_name
@@ -69,13 +85,14 @@ def download_media(
                 return False
             print('\nDownloading imgur', img_url)
             urlretrieve(img_url, filename, reporthook)
-        else:
-            pass
+
+        upload(file_path, chat_id, sub_reddit)
+
     except Exception as e:
         print(e)
 
 
-def request_reddit(url):
+def request_reddit(url, chat_id, sub_reddit):
     response = r.get(url, headers=headers)
     if response.status_code == 200:
         response_json = response.json()
@@ -83,17 +100,16 @@ def request_reddit(url):
         posts = response_json['data']['children']
         for post in posts:
 
-            # Identify post download url and source.
-
             source = post['data']['domain']
             media_url = post['data']['url']
             filename = post['data']['title']
             download_media(media_url, filename.replace('/', '_'),
-                           source, 'downloads')
+                           source, 'downloads', chat_id, sub_reddit)
 
         if next_page is not None:
-            print('\nHeading over to next page ... ')
+            print('Heading over to next page ... ')
             url = url + '&after=' + next_page
-            request_reddit(url)
+            request_reddit(url, chat_id, sub_reddit)
+
     else:
         print(response)

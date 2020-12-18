@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# This program is dedicated to the public domain under the CC0 license.
 # Coded with ❤️ by Neranjana Prasad (@NandiyaLive)
 
 
@@ -9,33 +10,29 @@ import sys
 import shutil
 import glob
 import os
+import zipfile
+import pathlib
 import telegram
+from telegram import Bot
 import requests
 from reddit import request_reddit
 
-bot_token = os.environ.get("BOT_TOKEN", "")
+bot_token = ""
 
 
 def start(update, context):
-    """Send a message when the command /start is issued."""
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text="<b>Hi There! 👋</b>\nI can download photos & videos using subreddit name.\nPlease read /help before use.", parse_mode=telegram.ParseMode.HTML)
+                             text="This bot can help you to download photos & videos from subreddits using subreddit name without leaving Telegram.\nPlease read /help before use.", parse_mode=telegram.ParseMode.HTML)
 
 
-def help_command(update, context):
-    """Send a message when the command /help is issued."""
+def help(update, context):
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text="This bot can help you to download photos & videos from subreddits using subreddit name without leaving Telegram. Simply send a <code>/get <subreddit name></code>.\n\n<b>How to find the subreddit name?</b>\nYou can find it in the browser's Address bar.\n<b>Example : </b>Subreddit name of https://www.reddit.com/r/gameofthrones is 'gameofthrones'.", parse_mode=telegram.ParseMode.HTML)
+                             text="Simply send  <code>/get <subreddit name></code>.\n\n<b>How to find the subreddit name?</b>\nYou can find it in the browser's Address bar.\n<b>Example : </b>Subreddit name of https://www.reddit.com/r/gameofthrones is 'gameofthrones'.", parse_mode=telegram.ParseMode.HTML)
 
 
-def about_command(update, context):
+def about(update, context):
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text='''Made with ❤️ + python-telegram-bot & reddit-media-downloader.\nSource Code : <a href="https://github.com/NandiyaLive/RedditDLBot">GitHub</a>''', parse_mode=telegram.ParseMode.HTML)
-
-
-def contact_command(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id,
-                             text="Please contact me on @NandiyaX Chat.In case you want to PM please use @NandiyaBot.", parse_mode=telegram.ParseMode.HTML)
+                             text='''Made with ❤️ + python-telegram-bot & <a href="https://github.com/thisisppn/reddit-media-downloader">reddit-media-downloader</a> by @NandiyaLive.\nSource Code : <a href="https://github.com/NandiyaLive/RedditDLBot">GitHub</a>\nPlease contact me on @NandiyaThings Support Chat.In case you want to PM please use @NandiyaBot.''', parse_mode=telegram.ParseMode.HTML)
 
 
 def echo(update, context):
@@ -44,11 +41,12 @@ def echo(update, context):
 
 
 @run_async
-def get_command(update, context):
-
-    msg = update.message.text.replace("/get ", "")
+def get(update, context):
 
     sub_reddit = update.message.text.replace("/get ", "")
+
+    chat_id = update.message.chat_id
+
     sorting = 'top'
     if sorting == 'top':
         url = 'https://www.reddit.com/r/{0}/top.json?sort=top&t=all'.format(
@@ -59,38 +57,45 @@ def get_command(update, context):
     context.bot.send_message(chat_id=update.message.chat_id,
                              text="Cooking your request 👨‍🍳\nThis may take longer, take a nap I can handle this without you.", parse_mode=telegram.ParseMode.HTML)
 
-    request_reddit(url)
+    request_reddit(url, chat_id, sub_reddit)
 
-    src_dir = "/downloads/" + msg
-    for jpgfile in glob.iglob(os.path.join(src_dir, "*.jpg")):
-        context.bot.send_photo(
-            chat_id=update.message.chat_id, photo=open(jpgfile, 'rb'))
 
-    for vidfile in glob.iglob(os.path.join(src_dir, "*.mp4")):
-        context.bot.send_video(
-            chat_id=update.message.chat_id, video=open(vidfile, 'rb'))
+def upload(file_path, chat_id, sub_reddit):
+    bot = Bot(token=bot_token)
+
+    bot.send_message(chat_id, text="Download Completed.\n🗄 Archiving files...")
+
+    zf = zipfile.ZipFile(f"{sub_reddit}.zip", "w")
+    for dirname, files in os.walk(sub_reddit):
+        zf.write(sub_reddit)
+        for filename in files:
+            zf.write(os.path.join(dirname, filename))
+    zf.close()
+
+    bot.send_message(chat_id, text="Uploading to Telegram...")
+
+    for zip_file in glob.glob("*.zip"):
+        bot.send_document(chat_id, document=open(zip_file, 'rb'))
 
     try:
-        shutil.rmtree(msg)
+        shutil.rmtree(sub_reddit)
+        os.remove(f"{sub_reddit}.zip")
     except Exception:
         pass
 
 
 def main():
-    """Start the bot."""
     updater = Updater(bot_token, use_context=True)
 
     dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("get", get_command))
-    dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(CommandHandler("contact", contact_command))
-    dp.add_handler(CommandHandler("about", about_command))
+    dp.add_handler(CommandHandler("start", start, run_async=True))
+    dp.add_handler(CommandHandler("get", get, run_async=True))
+    dp.add_handler(CommandHandler("help", help, run_async=True))
+    dp.add_handler(CommandHandler("about", about, run_async=True))
 
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
-    # Start the Bot
     updater.start_polling()
 
     updater.idle()
@@ -98,5 +103,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
